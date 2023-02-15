@@ -1,5 +1,6 @@
 package cz.eman.tddaplication.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import cz.eman.tddaplication.model.State
 import cz.eman.tddaplication.model.StockItem
@@ -56,23 +57,46 @@ class StockItemsViewModelTest {
     fun `viewModel is in loaded state when loading stocks from repository succeed`() = runTest {
         mockGetStocks(stockItems)
         init()
+        assertSwitchFromLoadingStateToLoaded()
+    }
+
+    @Test
+    fun `viewModel in loading state is restored from savedStateHandle, verify that stocks are loaded again`() =
+        runTest {
+            mockGetStocks(null, 5000)
+            val savedStateHandle = SavedStateHandle()
+            init(savedStateHandle)
+            tested.model.test {
+                skipItems(1)
+            }
+
+            mockGetStocks(stockItems)
+            init(savedStateHandle)
+            assertSwitchFromLoadingStateToLoaded()
+        }
+
+    private suspend fun assertSwitchFromLoadingStateToLoaded() {
         tested.model.test {
-            skipItems(1)
             awaitItem() shouldBe StocksItemsModel(
-                state = State.LOADED,
-                stockItems = stockItems.map { it.copy() })
+                stockItems = null,
+                state = State.LOADING,
+            )
+            awaitItem() shouldBe StocksItemsModel(
+                stockItems = stockItems.map { it.copy() },
+                state = State.LOADED
+            )
         }
     }
 
-    private fun mockGetStocks(stockItems: List<StockItem>?) {
+    private fun mockGetStocks(stockItems: List<StockItem>?, delay: Long = 50L) {
         coEvery { repository.getStocks() } coAnswers {
-            delay(50)
+            delay(delay)
             stockItems
         }
     }
 
-    private fun init() {
-        tested = StockItemsViewModel(repository)
+    private fun init(savedStateHandle: SavedStateHandle = SavedStateHandle()) {
+        tested = StockItemsViewModel(savedStateHandle, repository)
     }
 
 
