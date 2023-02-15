@@ -1,5 +1,6 @@
 package cz.eman.tddaplication.model
 
-class StocksItemsModel {
-    val isLoading: Boolean = true
-}
+ data class StocksItemsModel(
+     val isLoading: Boolean = true,
+     val isError: Boolean
+ )
