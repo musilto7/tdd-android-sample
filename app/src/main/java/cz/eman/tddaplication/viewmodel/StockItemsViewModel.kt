@@ -14,12 +14,26 @@ class StockItemsViewModel(
     private val repository: StocksRepository,
 ) : ViewModel() {
     val model: MutableStateFlow<StocksItemsModel> =
-        MutableStateFlow(StocksItemsModel(state = State.LOADING))
+        MutableStateFlow(
+            StocksItemsModel(
+                state = State.LOADING,
+                stockItems = null
+            )
+        )
 
     init {
         viewModelScope.launch {
-            delay(50)
-            model.update { it.copy(state = State.ERROR) }
+            val stocks = repository.getStocks()
+            if (stocks != null) {
+                model.update {
+                    it.copy(
+                        state = State.LOADED,
+                        stockItems = stocks
+                    )
+                }
+            } else {
+                model.update { it.copy(state = State.ERROR) }
+            }
         }
     }
 }
