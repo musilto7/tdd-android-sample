@@ -1,7 +1,17 @@
 package cz.eman.tddaplication.viewmodel
 
+import cz.eman.tddaplication.repository.StocksRepository
+import io.mockk.mockk
+import org.junit.Test
+
 class StockItemsViewModelTest {
 
-    private lateinit var tested : StockItemsViewModel
+    private val repository: StocksRepository = mockk()
+    private lateinit var tested: StockItemsViewModel
 
+    @Test
+    fun `viewModel is in loading state after initialization`() {
+        tested = StockItemsViewModel(repository)
+        tested.model
+    }
 }

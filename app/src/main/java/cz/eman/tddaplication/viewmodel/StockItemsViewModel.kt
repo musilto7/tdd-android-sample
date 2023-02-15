@@ -1,4 +1,9 @@
 package cz.eman.tddaplication.viewmodel
 
-class StockItemsViewModel {
+import cz.eman.tddaplication.repository.StocksRepository
+
+class StockItemsViewModel(
+    private val repository: StocksRepository,
+) {
+    val model : Unit = Unit
 }
