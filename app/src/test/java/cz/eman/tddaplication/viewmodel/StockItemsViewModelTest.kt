@@ -1,6 +1,7 @@
 package cz.eman.tddaplication.viewmodel
 
 import app.cash.turbine.test
+import cz.eman.tddaplication.model.State
 import cz.eman.tddaplication.model.StocksItemsModel
 import cz.eman.tddaplication.repository.StocksRepository
 import kotlinx.coroutines.test.runTest
@@ -35,15 +36,14 @@ class StockItemsViewModelTest {
         tested = StockItemsViewModel(repository)
         tested.model.test {
             awaitItem() shouldBe StocksItemsModel(
-                isLoading = true,
-                isError = false
+                state = State.LOADING,
             )
             awaitItem() shouldBe StocksItemsModel(
-                isLoading = false,
-                isError = true
+                state = State.ERROR
             )
         }
     }
+
     @After
     fun afterTests() {
         Dispatchers.resetMain()
