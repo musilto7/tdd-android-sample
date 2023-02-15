@@ -1,6 +1,10 @@
 package cz.eman.tddaplication.model
 
- data class StocksItemsModel(
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class StocksItemsModel(
      val state: State,
      val stockItems : List<StockItem>?,
- )
+ ): Parcelable

@@ -1,6 +1,7 @@
 package cz.eman.tddaplication.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import cz.eman.tddaplication.model.State
 import cz.eman.tddaplication.model.StockItem
@@ -75,6 +76,22 @@ class StockItemsViewModelTest {
             assertSwitchFromLoadingStateToLoaded()
         }
 
+    @Test
+    fun `viewModel in loaded state is restored from savedStateHandle`() = runTest {
+        mockGetStocks(emptyList())
+        val savedStateHandle = SavedStateHandle()
+        init(savedStateHandle)
+        tested.model.test {
+            skipItems(2)
+        }
+        mockGetStocks(stockItems)
+        init(savedStateHandle)
+        tested.model.test {
+            awaitItem() shouldBe StocksItemsModel(state = State.LOADED, emptyList())
+            verifyThatNoFurtherItemWillBeEmitted()
+        }
+    }
+
     private suspend fun assertSwitchFromLoadingStateToLoaded() {
         tested.model.test {
             awaitItem() shouldBe StocksItemsModel(
@@ -92,6 +109,18 @@ class StockItemsViewModelTest {
         coEvery { repository.getStocks() } coAnswers {
             delay(delay)
             stockItems
+        }
+    }
+
+    private suspend fun <T> ReceiveTurbine<T>.verifyThatNoFurtherItemWillBeEmitted() {
+        val emittedItem = try {
+            awaitItem()
+        } catch (e: AssertionError) {
+            // no - op
+            null
+        }
+        assert(emittedItem == null) {
+            "Expected no further item, but $emittedItem was received"
         }
     }
 
